@@ -81,6 +81,9 @@ Navigate to the "Checkpoint" instructions underneath the Activation section.
   * CPU - https://www.omnisci.com/docs/latest/4_centos7-yum-cpu-ce-recipe.html
   * GPU - https://www.omnisci.com/docs/latest/4_centos7-yum-gpu-ce-recipe.html
 * Ubuntu + Docker
+   * The "mapd" user is setup to use the Docker tooling
+       * SSH into your VM as the "mapdadmin" user
+       * Then change to the mapd user: sudo su - mapd
   * CPU - https://www.omnisci.com/docs/latest/4_docker_cpu_ce_recipe.html
   * GPU - https://www.omnisci.com/docs/latest/4_docker_gpu_ce_recipe.html
 
