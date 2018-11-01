@@ -6,6 +6,7 @@ It's easy to deploy OmniSci (MapD) to Microsoft Azure! The Azure template on thi
 * GPU or CPU VM? It's up to you! 
   * Our installation process will detect the type of VM you've chosen and deploy OmniSci CE GPU or CPU based upon that.
   * We'll also install the NVIDIA GPU drivers as necessary 
+  * After the installation process completes, you cannot switch your VM-series from a GPU to CPU and vice-versa.  However, you can scale up or down to a different GPU or CPU instance size.
 
 Let's get started! 
 
