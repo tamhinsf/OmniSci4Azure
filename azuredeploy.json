@@ -1,0 +1,362 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+      "osPlatform": {
+        "type": "string",
+        "defaultValue": "ubuntu-docker",
+        "allowedValues": [ "ubuntu-docker","centos" ],
+        "metadata": {
+          "description": "OS for the Virtual Machine."
+        }
+      },      
+      "vmName": {
+        "type": "string",
+        "defaultValue": "mapdvm",
+        "metadata": {
+          "description": "Name for the Virtual Machine."
+        }
+      },
+      "adminUsername": {
+        "type": "string",
+        "defaultValue": "mapdadmin",
+        "metadata": {
+          "description": "User name for the Virtual Machine."
+        }
+      },
+      "adminPassword": {
+        "type": "securestring",
+        "metadata": {
+          "description": "Password or ssh key for the Virtual Machine."
+        }
+      },
+      "vmSize": {
+        "type": "string",
+        "defaultValue": "Standard_NC6",
+        "metadata": {
+          "description": "Size for the Virtual Machine."
+        }
+      },
+      "dataDiskNumber" : {
+        "type" : "int",
+        "defaultValue": 1,
+        "minValue": 1,
+        "maxValue": 4,
+        "metadata": {
+          "description": "Number of data disk(s)."
+        }
+      },
+      "dataDiskSize" : {
+        "type" : "int",
+        "defaultValue": 512,
+        "minValue": 32,
+        "maxValue": 4095,
+        "metadata": {
+          "description": "Size of each data disk(s)."
+        }
+      },
+      "publicIpDns": {
+        "type": "string",
+        "defaultValue": "",
+        "metadata": {
+          "description": "Optional: DNS of the public ip address for the VM"
+        }
+      },
+      "_artifactsLocation": {
+        "type": "string",
+        "metadata": {
+          "description": "The base URI where artifacts required by this template are located. When the template is deployed using the accompanying scripts, a private location in the subscription will be used and this value will be automatically generated."
+        },
+        "defaultValue": "https://raw.githubusercontent.com/tamhinsf/OmniSci4Azure/"
+      },
+      "_artifactsLocationSasToken": {
+        "type": "securestring",
+        "metadata": {
+          "description": "The sasToken required to access _artifactsLocation.  When the template is deployed using the accompanying scripts, a sasToken will be automatically generated."
+        },
+        "defaultValue": ""
+      }
+    },
+    "variables": {
+      "storageNewOrExisting" : "new",
+      "storageAccountName" : "[concat('storage', uniqueString(resourceGroup().id))]",
+      "virtualNetworkNewOrExisting": "new",
+      "storageAccountType": "Standard_LRS",
+      "storageAccountResourceGroupName" : "[resourceGroup().name]",
+      "virtualNetworkResourceGroupName" : "[resourceGroup().name]",
+      "publicIpResourceGroupName" : "[resourceGroup().name]",
+      "virtualNetworkName" : "[concat(parameters('vmName'), '-vnet')]",
+      "location": "[resourceGroup().location]",
+      "subnetName" : "default",
+      "subnetPrefix" : "10.0.0.0/24",
+      "addressPrefixes" : ["10.0.0.0/16"],
+      "publicIpNewOrExisting" : "new",
+      "publicIpName" :  "[concat(parameters('vmName'), '-ip')]",
+      "nicName": "[concat(parameters('vmName'), '-nic')]",
+      "publicIpAddressId": {
+        "id": "[resourceId(variables('publicIpResourceGroupName'), 'Microsoft.Network/publicIPAddresses', variables('publicIpName'))]"
+      },
+      "networkSecurityGroupName": "[concat(parameters('vmName'), '-nsg')]",
+      "scriptFileName" :  "[if(equals(parameters('osPlatform'),'ubuntu-docker'),'azuredeploy-docker.sh','azuredeploy-centos.sh')]",
+      "scriptArgs" : "[concat(' ', parameters('dataDiskNumber'), ' ' , parameters('adminUsername'))]",
+      "extensionForGpu" : "nvidiaExt",
+      "extensionForScript" : "scriptExt"
+    },
+    "resources": [
+      {
+        "condition": "[equals(variables('storageNewOrExisting'), 'new')]",
+        "type": "Microsoft.Storage/storageAccounts",
+        "apiVersion": "2018-02-01",
+        "name": "[variables('storageAccountName')]",
+        "location": "[variables('location')]",
+        "kind": "Storage",
+        "sku": {
+          "name": "[variables('storageAccountType')]"
+        }
+      },
+      {
+        "condition": "[equals(variables('publicIpNewOrExisting'), 'new')]",
+        "type": "Microsoft.Network/publicIPAddresses",
+        "apiVersion": "2017-06-01",
+        "name": "[variables('publicIpName')]",
+        "location": "[variables('location')]",
+        "properties": {
+          "publicIPAllocationMethod": "Dynamic",
+          "dnsSettings": {
+            "domainNameLabel": "[if(equals(parameters('publicIpDns'), ''), concat(parameters('vmName'),'-',uniqueString(resourceGroup().id)), parameters('publicIpDns'))]" 
+          }
+        }
+      },
+      {
+        "condition": "[equals(variables('virtualNetworkNewOrExisting'), 'new')]",
+        "type": "Microsoft.Network/virtualNetworks",
+        "apiVersion": "2017-06-01",
+        "name": "[variables('virtualNetworkName')]",
+        "location": "[variables('location')]",
+        "properties": {
+          "addressSpace": {
+            "addressPrefixes": "[variables('addressPrefixes')]"
+          },
+          "subnets": [
+            {
+              "name": "[variables('subnetName')]",
+              "properties": {
+                "addressPrefix": "[variables('subnetPrefix')]"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "name": "[variables('networkSecurityGroupName')]",
+        "type": "Microsoft.Network/networkSecurityGroups",
+        "apiVersion": "2017-06-01",
+        "location": "[variables('location')]",
+        "properties": {
+          "securityRules": [
+            {
+              "name": "default-allow-ssh",
+              "properties": {
+                "priority": 1000,
+                "sourceAddressPrefix": "*",
+                "protocol": "Tcp",
+                "destinationPortRange": "22",
+                "access": "Allow",
+                "direction": "Inbound",
+                "sourcePortRange": "*",
+                "destinationAddressPrefix": "*"
+              }
+            },
+            {
+              "name": "default-allow-http",
+              "properties": {
+                "priority": 1100,
+                "sourceAddressPrefix": "*",
+                "protocol": "Tcp",
+                "destinationPortRange": "80",
+                "access": "Allow",
+                "direction": "Inbound",
+                "sourcePortRange": "*",
+                "destinationAddressPrefix": "*"
+              }
+            },
+            {
+              "name": "default-allow-https",
+              "properties": {
+                "priority": 1120,
+                "sourceAddressPrefix": "*",
+                "protocol": "Tcp",
+                "destinationPortRange": "443",
+                "access": "Allow",
+                "direction": "Inbound",
+                "sourcePortRange": "*",
+                "destinationAddressPrefix": "*"
+              }
+            },          
+            {
+              "name": "default-allow-mapd_ports",
+              "properties": {
+                "priority": 1200,
+                "sourceAddressPrefix": "*",
+                "protocol": "Tcp",
+                "destinationPortRange": "9090-9093",
+                "access": "Allow",
+                "direction": "Inbound",
+                "sourcePortRange": "*",
+                "destinationAddressPrefix": "*"
+              }
+            },
+            {
+              "name": "default-allow-jupyternotebook",
+              "properties": {
+                "priority": 1210,
+                "sourceAddressPrefix": "*",
+                "protocol": "Tcp",
+                "destinationPortRange": "8888",
+                "access": "Allow",
+                "direction": "Inbound",
+                "sourcePortRange": "*",
+                "destinationAddressPrefix": "*"
+              }
+            }
+            ]
+        }
+      },
+      {
+        "apiVersion": "2017-06-01",
+        "type": "Microsoft.Network/networkInterfaces",
+        "name": "[variables('nicName')]",
+        "location": "[variables('location')]",
+        "dependsOn": [
+          "[variables('publicIpName')]",
+          "[variables('virtualNetworkName')]",
+          "[variables('networkSecurityGroupName')]"
+        ],
+        "properties": {
+          "ipConfigurations": [
+            {
+              "name": "ipconfig1",
+              "properties": {
+                "privateIPAllocationMethod": "Dynamic",
+                "subnet": {
+                  "id": "[resourceId(variables('virtualNetworkResourceGroupName'), 'Microsoft.Network/virtualNetworks/subnets/', variables('virtualNetworkName'), variables('subnetName'))]"
+                },
+                "publicIPAddress": "[if(not(equals(variables('publicIpNewOrExisting'), 'none')), variables('publicIpAddressId') , json('null'))]"
+              }
+            }
+          ],
+          "networkSecurityGroup": {
+            "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroupName'))]"
+          }
+        }
+      },
+      {
+        "apiVersion": "2017-03-30",
+        "type": "Microsoft.Compute/virtualMachines",
+        "name": "[parameters('vmName')]",
+        "location": "[variables('location')]",
+        "dependsOn": [
+          "[variables('storageAccountName')]",
+          "[variables('nicName')]"
+        ],
+        "properties": {
+          "hardwareProfile": {
+            "vmSize": "[parameters('vmSize')]"
+          },
+          "osProfile": {
+            "computerName": "[parameters('vmName')]",
+            "adminUsername": "[parameters('adminUsername')]",
+            "adminPassword": "[parameters('adminPassword')]"
+          },
+          "storageProfile": {
+            "imageReference": {
+              "publisher": "[if(equals(parameters('osPlatform'),'ubuntu-docker'),'Canonical','OpenLogic')]",
+              "offer": "[if(equals(parameters('osPlatform'),'ubuntu-docker'),'UbuntuServer','CentOS')]",
+              "sku": "[if(equals(parameters('osPlatform'),'ubuntu-docker'),'16.04-LTS','7.4')]",
+              "version": "latest"
+            },
+            "copy": [
+              {
+                "name": "dataDisks",
+                "count": "[parameters('dataDiskNumber')]",
+                "input": {
+                  "diskSizeGB": "[parameters('dataDiskSize')]",
+                  "lun": "[copyIndex('dataDisks')]",
+                  "createOption": "Empty"
+                }
+              }
+            ],
+            "osDisk": {
+              "caching": "ReadWrite",
+              "createOption": "FromImage"
+            }
+          },
+          "networkProfile": {
+            "networkInterfaces": [
+              {
+                "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('nicName'))]"
+              }
+            ]
+          },
+          "diagnosticsProfile": {
+            "bootDiagnostics": {
+              "enabled": true,
+              "storageUri": "[reference(resourceId(variables('storageAccountResourceGroupName'), 'Microsoft.Storage/storageAccounts/', variables('storageAccountName')), '2018-02-01').primaryEndpoints.blob]"
+            }
+          }
+        },
+        "resources": [
+          {
+            "condition" : "[contains(toUpper(parameters('vmSize')),'_N')]",
+            "name": "[variables('extensionForGpu')]",
+            "type": "extensions",
+            "location": "[variables('location')]",
+            "apiVersion": "2017-03-30",
+            "dependsOn": [
+              "[parameters('vmName')]"
+            ],
+            "properties": {
+              "publisher": "Microsoft.HpcCompute",
+              "type": "NvidiaGpuDriverLinux",
+              "typeHandlerVersion": "1.1",
+              "autoUpgradeMinorVersion": true,
+              "settings": {
+              }
+            }
+          },
+          {
+            "name": "[variables('extensionForScript')]",
+            "type": "extensions",
+            "apiVersion": "2017-03-30",
+            "location": "[variables('location')]",
+            "dependsOn": [
+              "[parameters('vmName')]",
+              "[variables('extensionForGpu')]"
+            ],
+            "properties": {
+              "publisher": "Microsoft.Azure.Extensions",
+              "type": "CustomScript",
+              "typeHandlerVersion": "2.0",
+              "autoUpgradeMinorVersion": true,
+              "settings": {
+                "fileUris": [
+                 "[concat(parameters('_artifactsLocation'), concat('/', variables('scriptFileName'), parameters('_artifactsLocationSasToken')))]"              
+                ]
+              },
+              "protectedSettings": {
+                "commandToExecute": "[concat('bash ', variables('scriptFileName'), ' ', variables('scriptArgs'))]"
+              }
+            }
+          }
+
+        ]
+      }
+    ],
+    "outputs": {
+      "ssh-command": {
+        "type": "string",
+        "value": "[if(equals(variables('publicIpNewOrExisting'), 'none'), 'no public ip', concat('ssh ', parameters('adminUsername'), '@', reference(resourceId(variables('publicIpResourceGroupName'), 'Microsoft.Network/publicIPAddresses', variables('publicIpName')), '2018-04-01').dnsSettings.fqdn))]"
+      }
+    }
+  }
+  
