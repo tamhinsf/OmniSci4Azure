@@ -66,6 +66,7 @@ Before you deploy, you'll need to Agree to the terms and click Purchase to begin
 
 Using OmniSci's installation directions, you can load sample data into your OmniSci environment.  
 * You'll need to connect to your VM using the SSH credentials described above.
+* A local user named "mapd" was created to run the OmniSci (MapD) services
 
 Navigate to the "Checkpoint" instructions underneath the Activation section.
 * CentOS 
