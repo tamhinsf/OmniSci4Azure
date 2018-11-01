@@ -60,7 +60,7 @@ Before you deploy, you'll need to Agree to the terms and click Purchase to begin
     * Click DNS Name if you don't like the unique value we generated for the public-facing hostname 
     * Click the Connect icon to see the username@hostname value you can supply to your SSH client. 
   * The DNS Name associated with your VM can then be used to access the OmniSci Immerse interface.
-    * In your web browser, navigate to http://hostname:9092
+    * In your web browser, navigate to http://your-hostname:9092
 
 ### Loading Data Into OmniSci
 
@@ -78,3 +78,26 @@ Navigate to the "Checkpoint" instructions underneath the Activation section.
   * GPU - https://www.omnisci.com/docs/latest/4_docker_gpu_ce_recipe.html
 
 
+## Questions and comments
+
+We'd love to get your feedback about this sample. You can send your questions and suggestions to us in the Issues section of this repository.
+
+## Acknowledgements
+
+Portions of this solution based on [Installing MapD Community Edition on Microsoft Azure](https://github.com/omnisci/mapd_on_azure) authored by [OmniSci](https://github.com/omnisci)
+
+## Additional resources
+OmniSci
+* [OmniSci Community Forum](https://community.omnisci.com/)
+* [Installing OmniSci on Local Hardware](https://www.omnisci.com/docs/latest/4_installation_recipes.html)
+* [Docker CE CPU Installation Recipe](https://www.omnisci.com/docs/latest/4_docker_cpu_ce_recipe.html)
+* [Docker CE GPU Installation Recipe](https://www.omnisci.com/docs/latest/4_docker_gpu_ce_recipe.html)
+
+
+## Copyright
+
+Copyright (c) 2018 Tam Huynh. All rights reserved. 
+
+
+### Disclaimer ###
+**THIS CODE IS PROVIDED *AS IS* WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING ANY IMPLIED WARRANTIES OF FITNESS FOR A PARTICULAR PURPOSE, MERCHANTABILITY, OR NON-INFRINGEMENT.**
