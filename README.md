@@ -73,8 +73,11 @@ Using OmniSci's installation directions, you can load sample data into your Omni
 
 Navigate to the "Checkpoint" instructions underneath the Activation section.
 * CentOS 
-  * "su" to the user "mapd" after login to run the steps listed
-  * Environment issues? $MAPD_PATH will be /opt/mapd
+  * The "mapd" user's environment variables have all the needed OmniSci settings populated.  We suggest you:
+    * SSH into your VM as the "mapdadmin" user
+    * Change to the root user - the script to populate sample data requires root access: sudo su - root
+    * Get the environment variables from the "mapduser": source ~mapd/.bashrc
+    * Follow the instructions to run "insert_sample_data" as described in the links below
   * CPU - https://www.omnisci.com/docs/latest/4_centos7-yum-cpu-ce-recipe.html
   * GPU - https://www.omnisci.com/docs/latest/4_centos7-yum-gpu-ce-recipe.html
 * Ubuntu + Docker
