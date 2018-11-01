@@ -327,4 +327,8 @@ ASALocalRun/
 *.nvuser
 
 # MFractors (Xamarin productivity tool) working folder 
+<<<<<<< HEAD
 .mfractor/
+=======
+.mfractor/
+>>>>>>> 2c0d54f99129dc78c2426dfd462108a79c9fe8b1
