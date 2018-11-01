@@ -12,7 +12,7 @@ Identify an Azure Environment and User Account
 
 * You'll need an Azure account that has privileges to create and configure the Azure resources and services we've described 
 
-Load the Azure Resource Manager template into the Azure Portal so you can enter the configuration parameters described below. You can click the "Deploy to Azure" link to begin this process.  Don't worry - nothing will be deployed until you agree.  The Visualize link will map out the resources associated with this deployment.
+Click "Deploy to Azure" to load our Azure Resource Manager deployment template into the Azure Portal.  Don't worry - nothing will be deployed until you complete the required fields and confirm the deployment.  Wonder which components we'll use?  The Visualize link will map out the resources.  
 
 <a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Ftamhinsf%2FOmniSci4Azure%2Fmaster%2Fazuredeploy.json" target="_blank"> <img alt="Deploy to Azure" src="http://azuredeploy.net/deploybutton.png"/> </a>&nbsp;&nbsp;
 <a href="http://armviz.io/#/?load=https%3A%2F%2Fraw.githubusercontent.com%2Ftamhinsf%2FOmniSci4Azure%2Fmaster%2Fazuredeploy.json" target="_blank"> <img alt="Visualize" src="http://armviz.io/visualizebutton.png"/></a> 
