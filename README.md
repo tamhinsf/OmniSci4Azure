@@ -3,7 +3,9 @@
 It's easy to deploy OmniSci (MapD) to Microsoft Azure! The Azure template on this page will install and configure OmniSci Community Edition (CE) onto a Linux virtual machine running CentOS 7.4 or Ubuntu 16.04-LTS. 
 * CentOS 7.4 environments will make use of Yum packages 
 * Ubuntu 16.04-LTS environments will be deployed in a Docker environment 
-* GPU or CPU VM? It's up to you! Our installation process will detect the type of VM you've chosen and deploy OmniSci CE GPU or CPU based upon that. 
+* GPU or CPU VM? It's up to you! 
+  * Our installation process will detect the type of VM you've chosen and deploy OmniSci CE GPU or CPU based upon that.
+  * We'll also install the NVIDIA GPU drivers as necessary 
 
 Let's get started! 
 
