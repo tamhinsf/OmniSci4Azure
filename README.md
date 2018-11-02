@@ -32,7 +32,7 @@ We've pre-selected the lowest-cost GPU-powered VM series available: Standard_NC6
   * No worries!  Remember, we'll automatically install the GPU or CPU version of OmniSci CE based on your VM selection.
 * Deployment failures?  You may need to increase your vCPU quota as described here: 
   * https://docs.microsoft.com/en-us/azure/azure-supportability/resource-manager-core-quotas-request
-* Make the VM Series you enter is available in the Azure region you target. 
+* Make sure the VM Series you enter is available in the Azure region you target. 
   * GPU-powered VMs are not available in all Azure regions 
 * Need help? The Azure VM Comparision website will show you the VMs available in a given region https://azureprice.net/ 
 
